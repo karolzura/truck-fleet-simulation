@@ -16,19 +16,22 @@ class Truck:
         self.fuel_lvl = "OK"
     
     def move(self):
-        self.x += random.uniform(-0.0001,0.0001)
-        self.y += random.uniform(-0.0001,0.0001)
-        self.fuel -= random.uniform(0.1,0.6)
         if self.fuel <= 0:
             self.speed = 0
-            self.x += 0
-            self.y += 0
+            return
+        self.x += random.uniform(-0.0001, 0.0001)
+        self.y += random.uniform(-0.0001, 0.0001)
+        self.fuel -= random.uniform(0.1, 0.6)
     
     def fuel_status(self):
-        if self.fuel <= 10:
-            self.fuel_lvl = "LOW"
-        elif self.fuel <= 0:
+        if self.fuel <= 0:
             self.fuel_lvl = "EMPTY"
+            self.fuel = 0  
+        elif self.fuel <= 10:
+            self.fuel_lvl = "LOW"
+        else:
+            self.fuel_lvl = "OK"
+
     #returning truck info in json
     def to_dict(self):
         return {
