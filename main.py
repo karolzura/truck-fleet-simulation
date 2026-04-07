@@ -1,20 +1,24 @@
 from trucks import Truck
 from fleetManager import FleetManager
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+manager = FleetManager()
 
-async def main():
-    manager = FleetManager()
+async def run_simulation():
     manager.add_starter_fleet(5)
-
     while True:
         await manager.update_all()
-        telemetry = manager.get_fleet_data()
-        
-        print(f"Tracking {len(telemetry)} trucks...") 
         await asyncio.sleep(1)
 
-if __name__ == "__main__":
-    import asyncio
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Simulation stopped by user.")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(run_simulation())
+    yield
+    task.cancel()
+
+app = FastApi(lifespan=lifespan)
+
+@app.get("/fleet")
+async def get_fleet():
+    return manager.get_fleet_data()
