@@ -27,7 +27,7 @@ class Truck:
         else:
             self.fuel_lvl = "OK"
 
-def get_data(self) -> TruckData:
+    def get_data(self) -> TruckData:
         return TruckData(
             id=self.truck_id,
             speed=self.speed,

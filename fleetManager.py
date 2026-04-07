@@ -1,6 +1,6 @@
 from typing import List
 from trucks import Truck
-from model import TruckTelemetry
+from model import TruckData
 
 class FleetManager:
     def __init__(self):
@@ -17,5 +17,5 @@ class FleetManager:
             truck.move()
             truck.fuel_status()
 
-    def get_fleet_telemetry(self) -> List[TruckTelemetry]:
-        return [truck.get_telemetry() for truck in self.trucks]
+    def get_fleet_data(self) -> List[TruckData]:
+        return [truck.get_data() for truck in self.trucks]
