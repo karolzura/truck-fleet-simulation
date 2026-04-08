@@ -3,9 +3,10 @@
 #include <string>
 #include <cmath>     
 #include <fstream>
-struct Destination {
+/*struct Destination {
     std:: string name; 
     float x, y;
+    int priority;
     bool visited;
 
 };
@@ -22,3 +23,17 @@ class RouteEngine{
 
 
 };
+
+void RouteEngine:: loadDest(std::string& file){
+    dest.reserve(1000);
+
+}
+*/
+int main(){
+    std::fstream File;
+    File.open("destinations.txt", std::ios::in);
+    std::string dane;
+    getline(File,dane);
+    std::cout<<dane;
+    return 0;
+}
