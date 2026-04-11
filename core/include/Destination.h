@@ -8,7 +8,7 @@ struct Destination {
     float x, y;
     int priority;
     bool visited = false;
-    int skip_count = 0; // Ile razy punkt został pominięty
+    int skip_count = 0;
 
     Destination(std::string n, float _x, float _y, int p) 
         : name(n), x(_x), y(_y), priority(p) {}

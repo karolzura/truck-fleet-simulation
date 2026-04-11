@@ -15,10 +15,7 @@ struct KDNode {
 
 class KDTree {
 public:
-    void build(std::vector<Destination>& points){
-        
-
-    }
+    void build(std::vector<Destination>& points);
 
 
     std::vector<Destination*> searchKNN(float x, float y, int k);
@@ -30,6 +27,14 @@ private:
     std::vector<Destination>::iterator begin, 
     std::vector<Destination>::iterator end, 
     int depth
+    );
+    
+    void searchRecursive(
+        KDNode* node, 
+        float x, float y, 
+        int k, 
+        int depth, 
+        std::vector<std::pair<float, Destination*>>& neighbors
     );
 };
 
