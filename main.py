@@ -2,6 +2,8 @@ from trucks import Truck
 from fleetManager import FleetManager
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+import asyncio
+
 manager = FleetManager()
 
 async def run_simulation():
@@ -17,7 +19,7 @@ async def lifespan(app: FastAPI):
     yield
     task.cancel()
 
-app = FastApi(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/fleet")
 async def get_fleet():
