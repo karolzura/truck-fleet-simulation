@@ -1,51 +1,74 @@
 #include "../include/RouteEngine.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <cmath>
-void RouteEngine::loadDestinations(const std::string& filePath) {
-    std::vector<Destination> points;
-    std::ifstream file(filePath);
-    
-    if (!file.is_open()) return;
+#include <algorithm>
+#include <limits>
 
-    std::string line;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string name, x_s, y_s, p_s;
-        
-        if (std::getline(ss, name, ',') && 
-            std::getline(ss, x_s, ',') && 
-            std::getline(ss, y_s, ',') && 
-            std::getline(ss, p_s, ',')) {
-            
-            points.emplace_back(name, std::stof(x_s), std::stof(y_s), std::stoi(p_s));
-        }
-    }
-
-    tree.build(points);
+void RouteEngine::rebuildTree() {
+    tree.build(orders);
 }
 
-Destination RouteEngine::getNextTarget(float currX, float currY, float fuel) {
-    auto candidates = tree.searchKNN(currX, currY, 5);
-    
+float RouteEngine::travelCost(float x1, float y1, float x2, float y2, float fuel) const {
+    float dist = std::hypot(x1 - x2, y1 - y2);
+    float fuel_cost = dist * 0.3f;
+    return dist + fuel_cost;
+}
+
+void RouteEngine::addOrder(const std::string& order_id, const std::string& city,
+                            float x, float y, int priority, long long deadline_ts) {
+    orders.emplace_back(city, order_id, x, y, priority, deadline_ts);
+    rebuildTree();
+}
+
+void RouteEngine::removeOrder(const std::string& order_id) {
+    orders.erase(
+        std::remove_if(orders.begin(), orders.end(),
+            [&](const Destination& d) { return d.order_id == order_id; }),
+        orders.end()
+    );
+    rebuildTree();
+}
+
+bool RouteEngine::hasOrders() const {
+    return std::any_of(orders.begin(), orders.end(),
+        [](const Destination& d) { return !d.visited; });
+}
+
+int RouteEngine::pendingCount() const {
+    return (int)std::count_if(orders.begin(), orders.end(),
+        [](const Destination& d) { return !d.visited; });
+}
+
+Destination RouteEngine::getNextTarget(const std::string& truck_id,
+                                        float currX, float currY,
+                                        float fuel, long long now_ts) {
+    if (orders.empty()) return Destination("BASE", "", 0, 0, 0, 0);
+
+    auto candidates = tree.searchKNN(currX, currY, (int)orders.size());
+
     Destination* best = nullptr;
-    float maxScore = -1.0f;
+    float bestScore = std::numeric_limits<float>::lowest();
 
     for (auto* c : candidates) {
         if (c->visited) continue;
 
         float dist = std::hypot(currX - c->x, currY - c->y);
-        
-
         if (dist > fuel * 10.0f) continue;
-        float score = (c->priority + c->skip_count) / (dist + 0.1f);
 
-        if (score > maxScore) {
-            maxScore = score;
+        long long time_remaining = c->deadline_ts - now_ts;
+        if (time_remaining <= 0) {
+            c->skip_count++;
+            continue;
+        }
+
+        float urgency = 1.0f / (float)(time_remaining + 1);
+        float cost    = travelCost(currX, currY, c->x, c->y, fuel);
+        float score   = ((float)c->priority * urgency * 1000.0f) - cost + (float)c->skip_count * 0.5f;
+
+        if (score > bestScore) {
+            bestScore = score;
             best = c;
         } else {
-            c->skip_count++; 
+            c->skip_count++;
         }
     }
 
@@ -53,5 +76,42 @@ Destination RouteEngine::getNextTarget(float currX, float currY, float fuel) {
         best->visited = true;
         return *best;
     }
-    return Destination("BASE", 0, 0, 0);
+    return Destination("BASE", "", 0, 0, 0, 0);
+}
+
+Destination RouteEngine::getNearestTarget(float currX, float currY) {
+    if (orders.empty()) return Destination("BASE", "", 0, 0, 0, 0);
+
+    auto candidates = tree.searchKNN(currX, currY, (int)orders.size());
+
+    Destination* nearest = nullptr;
+    float minDist = std::numeric_limits<float>::max();
+
+    for (auto* c : candidates) {
+        if (c->visited) continue;
+        float dist = std::hypot(currX - c->x, currY - c->y);
+        if (dist < minDist) {
+            minDist = dist;
+            nearest = c;
+        }
+    }
+
+    if (nearest) {
+        nearest->visited = true;
+        return *nearest;
+    }
+    return Destination("BASE", "", 0, 0, 0, 0);
+}
+
+bool RouteEngine::assignOrder(const std::string& truck_id, const std::string& order_id,
+                               float currX, float currY, float fuel, long long now_ts) {
+    for (auto& d : orders) {
+        if (d.order_id == order_id && !d.visited) {
+            float dist = std::hypot(currX - d.x, currY - d.y);
+            if (dist > fuel * 10.0f) return false;
+            d.visited = true;
+            return true;
+        }
+    }
+    return false;
 }
