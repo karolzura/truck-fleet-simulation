@@ -55,7 +55,7 @@ class FleetManager:
             self.engine.add_order(order_id, city, lat, lng, priority, deadline_ts)
  
         for truck in self.trucks:
-            if truck.state == STATE_IDLE:
+            if truck.state in (STATE_IDLE, STATE_STOPPED):
                 truck.wake_up()
  
         return order
@@ -71,9 +71,6 @@ class FleetManager:
  
         if order.status != "PENDING":
             return {"success": False, "reason": f"Order {order_id} is already {order.status}"}
- 
-        if truck.state == STATE_STOPPED:
-            return {"success": False, "reason": f"Truck {truck_id} is stopped"}
  
         if self.engine is None:
             return {"success": False, "reason": "Routing engine unavailable"}

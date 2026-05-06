@@ -73,6 +73,9 @@ Destination RouteEngine::getNextTarget(const std::string& truck_id,
     }
 
     if (best) {
+        for (auto& o : orders) {
+            if (o.order_id == best->order_id) { o.visited = true; break; }
+        }
         best->visited = true;
         return *best;
     }
@@ -97,6 +100,9 @@ Destination RouteEngine::getNearestTarget(float currX, float currY) {
     }
 
     if (nearest) {
+        for (auto& o : orders) {
+            if (o.order_id == nearest->order_id) { o.visited = true; break; }
+        }
         nearest->visited = true;
         return *nearest;
     }

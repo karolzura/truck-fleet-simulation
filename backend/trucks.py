@@ -74,10 +74,7 @@ class Truck:
 
     def _pick_next_target(self, engine):
         if engine is None or not engine.has_orders():
-            if engine is not None and not engine.has_orders():
-                self.state = STATE_STOPPED
-            else:
-                self.state = STATE_IDLE
+            self.state = STATE_IDLE
             return
 
         now_ts = int(datetime.now(timezone.utc).timestamp())
@@ -95,7 +92,7 @@ class Truck:
         else:
             nearest = engine.get_nearest_target(self.x, self.y)
             if nearest.name == "BASE":
-                self.state = STATE_STOPPED
+                self.state = STATE_IDLE
             else:
                 self.current_target = nearest
                 self.current_order  = nearest.order_id
@@ -115,7 +112,7 @@ class Truck:
         self.speed = self.base_speed
 
         if engine is None or not engine.has_orders():
-            self.state = STATE_STOPPED if engine else STATE_IDLE
+            self.state = STATE_IDLE
             return None
 
         if self.current_target is not None:
@@ -165,7 +162,7 @@ class Truck:
             self.fuel_lvl = "OK"
 
     def wake_up(self):
-        if self.state == STATE_IDLE:
+        if self.state in (STATE_IDLE, STATE_STOPPED):
             self.state = STATE_DRIVING
 
     def get_data(self) -> TruckData:
