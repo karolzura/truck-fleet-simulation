@@ -56,6 +56,10 @@ class Truck:
             self._pick_next_target(engine)
             return None
 
+        if self.state == STATE_CRAWLING and self.fuel <= 0:
+            self._start_refueling()
+            return None
+
         if self.current_target is None or self._reached_target():
             if self.current_target is not None and self._reached_target():
                 completed_order_id = self.current_order
@@ -130,7 +134,7 @@ class Truck:
                 self.current_order  = dest.order_id
                 self.state          = STATE_DRIVING
             else:
-                self.state = STATE_STOPPED
+                self.state = STATE_IDLE
 
         return None
 
@@ -138,7 +142,8 @@ class Truck:
         if self.current_target is None:
             return False
         if self.state == STATE_CRAWLING:
-            return self.fuel <= 0
+            dist = math.hypot(self.x - self.current_target.x, self.y - self.current_target.y)
+            return dist < 0.05
         dist = math.hypot(self.x - self.current_target.x,
                           self.y - self.current_target.y)
         return dist < 0.05
@@ -156,8 +161,12 @@ class Truck:
         if self.fuel <= 0:
             self.fuel     = 0
             self.fuel_lvl = "EMPTY"
+            if self.state == STATE_DRIVING:
+                self.state = STATE_CRAWLING
         elif self.fuel <= 10:
             self.fuel_lvl = "LOW"
+            if self.state == STATE_DRIVING:
+                self.state = STATE_CRAWLING
         else:
             self.fuel_lvl = "OK"
 

@@ -1,18 +1,56 @@
-# Python bytecode
+# ─── Python ───────────────────────────────────────────────
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 *.pyd
+*.pyo
 
-# Environments
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Virtual environments
 .venv/
 venv/
 ENV/
 env/
-build/
-# IDEs
+
+# ─── C++ extension (compiled, platform-specific) ──────────
+*.so
+*.pyd
+*.dll
+backend/build/
+backend/simulation_engine*.so
+
+# ─── Frontend ─────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+
+# ─── Secrets / credentials ────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets.*
+*secret*
+*credential*
+
+# ─── Logs & temp ──────────────────────────────────────────
+*.log
+logs/
+tmp/
+temp/
+
+# ─── IDEs ─────────────────────────────────────────────────
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# OS files
+# ─── OS ───────────────────────────────────────────────────
 .DS_Store
+Thumbs.db
