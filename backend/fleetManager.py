@@ -149,6 +149,9 @@ class FleetManager:
             fuel_per_delivery = truck.total_fuel_used / truck.deliveries_made
             self._delivery_fuel_samples.append(fuel_per_delivery)
  
+        if self.engine:
+            self.engine.remove_order(order_id)
+
         if not on_time:
             self._push_alert(
                 truck_id=truck.truck_id,

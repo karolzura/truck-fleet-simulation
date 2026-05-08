@@ -115,10 +115,6 @@ class Truck:
         self.fuel  = FUEL_CAPACITY
         self.speed = self.base_speed
 
-        if engine is None or not engine.has_orders():
-            self.state = STATE_IDLE
-            return None
-
         if self.current_target is not None:
             dist = math.hypot(self.x - self.current_target.x,
                               self.y - self.current_target.y)
@@ -126,15 +122,20 @@ class Truck:
                 self.state = STATE_DRIVING
             else:
                 self.state = STATE_CRAWLING
+            return None
+
+        if engine is None or not engine.has_orders():
+            self.state = STATE_IDLE
+            return None
+
+        now_ts = int(datetime.now(timezone.utc).timestamp())
+        dest = engine.get_next_target(self.truck_id, self.x, self.y, self.fuel, now_ts)
+        if dest.name != "BASE":
+            self.current_target = dest
+            self.current_order  = dest.order_id
+            self.state          = STATE_DRIVING
         else:
-            now_ts = int(datetime.now(timezone.utc).timestamp())
-            dest = engine.get_next_target(self.truck_id, self.x, self.y, self.fuel, now_ts)
-            if dest.name != "BASE":
-                self.current_target = dest
-                self.current_order  = dest.order_id
-                self.state          = STATE_DRIVING
-            else:
-                self.state = STATE_IDLE
+            self.state = STATE_IDLE
 
         return None
 
